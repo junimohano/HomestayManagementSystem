@@ -15,6 +15,7 @@ namespace HomestayManagementSystem.Controllers
         public void SetProfile()
         {
             ViewData["Profile"] = $"Hello, {HttpContext?.User.Claims.FirstOrDefault(x => x.Type == ConstValue.UserInfoKey).Value}";
+
             //var permissionName = HttpContext.Session.GetString(ConstValue.PermissionNameSessionKey);
             //SiteLocations = siteLocations == null ? new List<int>() : JsonConvert.DeserializeObject<List<int>>(siteLocations);
         }
