@@ -1,0 +1,142 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model HomestayPoliceCheck
+
+<div id="updateHomestayPoliceCheckWrapper">
+    <form asp-controller="Homestay" asp-action="SetHomestayPoliceCheck" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateHomestayPoliceCheckWrapper" data-ajax-begin="formHomestayPoliceCheckBegin">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.HomestayPoliceCheckId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.HomestayPoliceCheckId)
+            @Html.HiddenFor(x => x.HomestayId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.PoliceCheckDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePickerFor(x => x.PoliceCheckDate).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.PoliceCheckFileName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.PoliceCheckFileName).HtmlAttributes(new { @class = "form-control", style = "width:100%;", @readonly = "readonly" }))
+                    @(Html.Kendo().Upload()
+                            .Name("uploadHomestayPoliceCheck")
+                            .Multiple(false)
+                            .Enable(@Model.HomestayPoliceCheckId != 0)
+                            .Events(x => x.Success("onHomestayPoliceCheckSuccess").Select("onHomestayPoliceCheckSelect"))
+                            .Async(x => x.Save("SaveFile", "Common", new { fileType = ConstValue.FileType.HomestayPoliceCheck, id = @Model.HomestayPoliceCheckId, previousFileName = @Model.PoliceCheckFileName })
+                            .Remove("RemoveFile", "Common", new { fileType = ConstValue.FileType.HomestayPoliceCheck })
+                            .SaveField("files")
+                            )
+                            .Validation(validation => validation.MaxFileSize(3145728))
+                    )
+                    @*<div>Maximum allowed file size is <strong>3MB</strong>.</div>*@
+                    @if (!string.IsNullOrEmpty(Model.PoliceCheckFileName))
+                    {
+                        @Html.ActionLink("Download", "DownloadFile", "Common", new { fileType = ConstValue.FileType.HomestayPoliceCheck, id = @Model.HomestayPoliceCheckId }, new { type = "button", @class = "k-button k-button-icontext", style = "width:150px;" })
+                    }
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.IsPoliceCheckActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().CheckBoxFor(x => x.IsPoliceCheckActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-10">
+                    <p></p>
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayPoliceCheckSave")
+                          .Events(x => x.Click("saveHomestayPoliceCheckClicked"))
+                          .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100px" })
+                          .Content("Save"))
+
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayPoliceCheckClose")
+                          .Events(x => x.Click("closeHomestayPoliceCheckClicked"))
+                          .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100px" })
+                          .Content("Close"))
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formHomestayPoliceCheckBegin(e) {
+        $("#buttonHomestayPoliceCheckSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    $(document).ready(function () {
+
+    });
+
+    function onHomestayPoliceCheckSelect(e) {
+        e.files[0].name = @Model.HomestayPoliceCheckId + "_" + e.files[0].name;
+    }
+
+    function onHomestayPoliceCheckSuccess(e) {
+        switch (e.operation) {
+            case "upload":
+                $("#PoliceCheckFileName").val(e.files[0].name);
+                //console.log('upload --> ' + e.files[0].name);
+                break;
+            case "remove":
+                $("#PoliceCheckFileName").val("");
+                //console.log('remove --> ' + e.files[0].name);
+                break;
+        }
+    }
+
+    function closeHomestayPoliceCheckClicked(e) {
+        closeHomestayPoliceCheckPopup(false);
+    }
+
+    function saveHomestayPoliceCheckClicked(e) {
+        //$("#SiteId").val($("#sites").data("kendoComboBox").value());
+        //$("#SiteLocationId").val($("#siteLocations").data("kendoComboBox").value());
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closeHomestayPoliceCheckPopup(true);
+        </script>
+    }
+}

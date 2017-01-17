@@ -1,0 +1,306 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model HomestayStudent
+
+<div id="updateWrapper">
+    <form asp-controller="HomestayStudent" asp-action="SetHomestayStudent" novalidate="novalidate" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateWrapper" data-ajax-begin="formHomestayStudentBegin">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.HomestayStudentId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.HomestayStudentId)
+            @Html.HiddenFor(x => x.HomestayId)
+            @Html.HiddenFor(x => x.StudentId)
+            @Html.HiddenFor(x => x.SiteId)
+            @Html.HiddenFor(x => x.SiteLocationId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.HomestayId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+
+                    @(Html.Kendo().ComboBox()
+                          .Name("homestays")
+                          .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                          .Placeholder("Select homestay...")
+                          .DataTextField("HomestayFamily")
+                          .DataValueField("HomestayId")
+                          .Value(@Model.HomestayId == 0 ? "" : Model.HomestayId.ToString())
+                          .Suggest(true)
+                          .Height(450)
+                          .Filter("contains")
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetHomestays", "HomestayStudent");
+                              });
+                          })
+                          .HeaderTemplate("<div class=\"dropdown-header k-widget k-header\">" +
+                                "<span>Homestay info</span>" +
+                            "</div>")
+                          .Template("<span class=\"k-state-default\"><h6>#: data.HomestayFamily #</h6><p>#: data.Address #</p></span>")
+                    )
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.SiteId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("sites")
+                          .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                          .Placeholder("Select site...")
+                          .DataTextField("Name")
+                          .DataValueField("SiteId")
+                          .Value(@Model.SiteId == 0 ? "" : Model.SiteId.ToString())
+                          .Suggest(true)
+                          .Filter("contains")
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetSites", "Common");
+                              });
+                          })
+                    )
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.SiteLocationId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+
+                    @(Html.Kendo().ComboBox()
+                          .Name("siteLocations")
+                          .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                          .Placeholder("Select site location...")
+                          .DataTextField("Name")
+                          .DataValueField("SiteLocationId")
+                          .Value(@Model.SiteLocationId == 0 ? "" : Model.SiteLocationId.ToString())
+                          .Suggest(true)
+                          .Filter("contains")
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetSiteLocations", "Common")
+                                      .Data("filterSiteLocations");
+                              })
+                              .ServerFiltering(true);
+                          })
+                          .AutoBind(false)
+                          .Enable(false)
+                          .CascadeFrom("sites")
+                    )
+                    <script>
+                        function filterSiteLocations() {
+                            return {
+                                siteId: $("#sites").val()
+                            };
+                        }
+                    </script>
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.StudentId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+
+                    @(Html.Kendo().ComboBox()
+                          .Name("students")
+                          .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                          .Placeholder("Select student...")
+                          .DataTextField("StudentName")
+                          .DataValueField("StudentId")
+                          .Value(@Model.StudentId == 0 ? "" : Model.StudentId.ToString())
+                          .Suggest(true)
+                          .Filter("contains")
+                          .Height(450)
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetStudents", "HomestayStudent")
+                                      .Data("filterStudents");
+                              })
+                              .ServerFiltering(true);
+                          })
+                           .HeaderTemplate("<div class=\"dropdown-header k-widget k-header\">" +
+                                "<span>Student info</span>" +
+                            "</div>")
+                          .Template("<span class=\"k-state-default\"><h6>#: data.StudentName #</h6><p>#: data.StudentNo #</p></span>")
+                          .AutoBind(false)
+                          .Enable(false)
+                          .CascadeFrom("siteLocations")
+                    )
+                    <script>
+                        function filterStudents() {
+                            return {
+                                siteLocationId: $("#siteLocations").val(),
+                                studentName: $("#students").data("kendoComboBox").input.val()
+                            };
+                        }
+                    </script>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Arrival, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePickerFor(x => x.Arrival).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Departure, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePickerFor(x => x.Departure).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.DueDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePickerFor(x => x.DueDate).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Amount, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().CurrencyTextBoxFor(x => x.Amount).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.PaidDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePickerFor(x => x.PaidDate).Format("{0:d}")
+                        .Enable((int)ViewData["PermissionId"] != (int)ConstValue.PermissionType.User)
+                        .HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.PaidAmount, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().CurrencyTextBoxFor(x => x.PaidAmount)
+                        .Enable((int)ViewData["PermissionId"] != (int)ConstValue.PermissionType.User)
+                        .HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.IsActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().CheckBoxFor(x => x.IsActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonSave")
+                          .Events(x => x.Click("saveClicked"))
+                          .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                          .Content("Save"))
+                </div>
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonClose")
+                          .Events(x => x.Click("closeClicked"))
+                          .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" })
+                          .Content("Close"))
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formHomestayStudentBegin(e) {
+        $("#buttonSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    $(document).ready(function () {
+
+    });
+
+    function closeClicked(e) {
+        closePopup(false);
+    }
+
+    function saveClicked(e) {
+        $("#SiteId").val($("#sites").data("kendoComboBox").value());
+        $("#SiteLocationId").val($("#siteLocations").data("kendoComboBox").value());
+        $("#StudentId").val($("#students").data("kendoComboBox").value());
+        $("#HomestayId").val($("#homestays").data("kendoComboBox").value());
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closePopup(true);
+        </script>
+    }
+}

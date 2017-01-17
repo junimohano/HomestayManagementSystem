@@ -1,0 +1,119 @@
+﻿@using HomestayManagementSystem.Models
+@{
+    ViewData["Title"] = nameof(User);
+}
+<div class="container-fluid">
+    <h5>User List</h5>
+</div>
+
+@(Html.Kendo().Grid<User>
+    ().Name("grid").Columns(columns =>
+    {
+        columns.Bound(x => x.UserId).Width(80).Title("No");
+        columns.Bound(x => x.LoginId).Width(150);
+        columns.Bound(x => x.FirstName).Width(170);
+        columns.Bound(x => x.LastName).Width(170);
+        columns.Bound(x => x.Permission.Name).Filterable(ftb => ftb.Multi(true).Search(true).CheckAll(true)).Width(120).Title("Permission");
+        columns.Bound(x => x.IsActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+        columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+        columns.Bound(x => x.CreatedUserName).Width(200);
+        columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+        columns.Bound(x => x.UpdatedUserName).Width(200);
+
+        //columns.Bound(x => x.UpdatedUser).ClientTemplate(" #= UpdatedUser ? ([UpdatedUser.FirstName, UpdatedUser.LastName]).join(' ') : '' # ").Width(150).Title("Updated User").Groupable(false);
+        //columns.Command(command => { command.Edit(); command.Destroy(); }).Width(160);
+    })
+    //.ClientDetailTemplateId("detail-template")
+    .ToolBar(x => x.ClientTemplateId("customClientTemplate"))
+    .Editable(editable => editable.Mode(GridEditMode.PopUp))
+    .Filterable(x => x.Extra(false))
+    .Scrollable(s => s.Height(840))
+    //    .Groupable()
+    .Resizable(x => x.Columns(true))
+    .Sortable()
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable(pageable => pageable
+        .Refresh(true)
+        .PageSizes(true)
+        .ButtonCount(10)
+    )
+    .Events(x => x.Change("onChange"))
+    .Excel(excel => excel
+        .FileName("User List.xlsx")
+        .Filterable(true)
+        .ProxyURL(Url.Action("SaveExcelExport", "Common"))
+        .AllPages(true)
+    )
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("Read", "User"))
+        .Filter(x => x.Add(x1=>x1.IsActive).IsEqualTo(true))
+        .PageSize(18)
+        //        .ServerOperation(false)
+        .Model(x =>
+        {
+            x.Id(x1 => x1.UserId);
+        })
+    ))
+
+@(Html.Kendo().Window()
+        .Name("userPopup")
+        .Title("User Detail")
+        .LoadContentFrom("UserDetailPartial", "User")
+        .Events(x => x.Activate("userPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .MinWidth(550)
+        .MaxWidth(750)
+        .Height(650)
+        .Pinned(true)
+        .Scrollable(true)
+)
+
+<script type="text/x-kendo-template" id="customClientTemplate">
+    <a class='k-button k-button-icontext' onClick="openDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add User</a>
+    <a class='k-button k-button-icontext k-grid-excel'><img src="../images/Microsoft Excel-48.png" class="submenu_icon" /> Export to Excel</a>
+</script>
+
+@*<script id="detail-template" type="text/x-kendo-template">
+        Product Details:
+        <div>Product Name: #: UserId # </div>
+        <div>Units In Stock: #: FirstName #</div>
+    </script>*@
+
+<script type="text/javascript">
+
+    function userPopupActivate(e) {
+        $('#userPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#userPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#userPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function onChange(arg) {
+        var data = this.dataItem(this.select());
+        openDialog(data.id);
+    }
+
+    function closePopup(isRefresh) {
+        $("#userPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function openDialog(userId) {
+        var userPopup = $("#userPopup").data("kendoWindow");
+        userPopup.refresh({
+            url: "/User/UserDetailPartial/",
+            data: { userId: userId }
+        });
+
+        userPopup.open();
+    }
+</script>

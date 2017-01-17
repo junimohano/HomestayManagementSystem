@@ -1,0 +1,154 @@
+﻿@using HomestayManagementSystem.Models
+@{
+    ViewData["Title"] = nameof(Homestay);
+}
+
+<div class="container-fluid">
+    <h5>Homestay List</h5>
+</div>
+
+@(Html.Kendo().Grid<Homestay>().Name("grid").Columns(columns =>
+{
+    columns.Bound(x => x.HomestayId).Width(80).Title("No");
+    columns.Bound(x => x.HomestayFamily).Width(250);
+    columns.Bound(x => x.Address).Width(400);
+    columns.Bound(x => x.Score).Width(100);
+    columns.Bound(x => x.Room).Width(100);
+    columns.Bound(x => x.Students).Width(110);
+    columns.Bound(x => x.HouseHolders).Width(160);
+    columns.Bound(x => x.Contract).Format("{0:d}").Width(110);
+    columns.Bound(x => x.PoliceCheck).Format("{0:d}").Width(140).Sortable(false).Filterable(false);
+    columns.Bound(x => x.Language).Width(140);
+    //columns.Command(command => command.Custom("Contract").Click("showDetails")).Width(100).Title("Open");
+    //columns.Command(command => command.Custom("Evaluation").Click("showDetails")).Width(110).Title("Open");
+    //columns.Command(command => command.Custom("PoliceCheck").Click("showDetails")).Width(120).Title("Open");
+    columns.Bound(x => x.IsActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+    columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+    columns.Bound(x => x.CreatedUserName).Width(200);
+    columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+    columns.Bound(x => x.UpdatedUserName).Width(200);
+
+})
+    //.ClientDetailTemplateId("detail-template")
+    .ToolBar(t => t.ClientTemplateId("customClientTemplate"))
+    .Filterable(x => x.Extra(false))
+    .Scrollable(s => s.Height(840))
+    //    .Groupable()
+    .Sortable()
+    .Resizable(x => x.Columns(true))
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable(pageable => pageable
+        .Refresh(true)
+        .PageSizes(true)
+        .ButtonCount(10)
+    )
+    .Events(x => x.Change("onChange"))
+    .Excel(excel => excel
+        .FileName("Homestay List.xlsx")
+        .Filterable(true)
+        .ProxyURL(Url.Action("SaveExcelExport", "Common"))
+        .AllPages(true)
+    )
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("Read", "Homestay"))
+        .PageSize(18)
+        .Filter(x => x.Add(x1 => x1.IsActive).IsEqualTo(true))
+        //        .ServerOperation(false)
+        .Model(x =>
+        {
+            x.Id(x1 => x1.HomestayId);
+        })
+    ))
+
+@(Html.Kendo().Window()
+        .Name("homestayPopup")
+        .Title("Homestay Detail")
+        .LoadContentFrom("HomestayDetailPartial", "Homestay")
+        .Events(x => x.Activate("homestayPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .Pinned(true)
+        .Scrollable(true)
+        .Height(650)
+        .Width(1280)
+        .MinWidth(800)
+        .MaxWidth(1280)
+)
+
+<script type="text/x-kendo-template" id="customClientTemplate">
+    <a class='k-button k-button-icontext' onClick="openDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add Homestay</a>
+    <a class='k-button k-button-icontext k-grid-excel'><img src="../images/Microsoft Excel-48.png" class="submenu_icon" /> Export to Excel</a>
+</script>
+
+@*<script id="detail-template" type="text/x-kendo-template">
+        <div>Remark: #: Remark # </div>
+    </script>*@
+
+@*@(Html.Kendo().Window().Name("HomestayContractPopup")
+        .Title("Homestay Contract")
+        .Visible(false)
+        .Modal(true)
+        .Draggable(true)
+        .Width(300)
+    )
+
+    <script type="text/x-kendo-template" id="template">
+        <div id="details-container">
+            <h2>#= FirstName # #= LastName #</h2>
+            <em>#= Title #</em>
+            <dl>
+                <dt>City: #= City #</dt>
+                <dt>Address: #= Address #</dt>
+            </dl>
+        </div>
+    </script>*@
+
+<script type="text/javascript">
+
+    //var detailsTemplate = kendo.template($("#template").html());
+
+    //function showDetails(e) {
+    //    e.preventDefault();
+
+    //    var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+    //    var wnd = $("#Details").data("kendoWindow");
+
+    //    wnd.content(detailsTemplate(dataItem));
+    //    wnd.center().open();
+    //}
+
+    function homestayPopupActivate(e) {
+        $('#homestayPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#homestayPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#homestayPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function onChange(arg) {
+        var data = this.dataItem(this.select());
+        openDialog(data.id);
+    }
+
+    function closePopup(isRefresh) {
+        $("#homestayPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function openDialog(homestayId) {
+        var homestayPopup = $("#homestayPopup").data("kendoWindow");
+        homestayPopup.refresh({
+            url: "/Homestay/HomestayDetailPartial/",
+            data: { homestayId: homestayId }
+        });
+
+        homestayPopup.open();
+    }
+</script>

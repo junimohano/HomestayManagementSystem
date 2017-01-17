@@ -1,0 +1,132 @@
+﻿@using System.Threading.Tasks
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    @*<meta name="viewport" content="width=device-width, initial-scale=1.0" />*@
+    <title>@ViewData["Title"] - Homestay Management System</title>
+
+    <link rel="shortcut icon" href="~/images/logo_loyalist_24x24.png" />
+
+    <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+
+        <link rel="stylesheet" href="~/lib/kendo-ui/styles/kendo.common.min.css" />
+        <link rel="stylesheet" href="~/lib/kendo-ui/styles/kendo.flat.min.css" />
+
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.js"></script>
+        @*<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
+        <script src="~/js/site.js" asp-append-version="true"></script>
+
+        <script src="~/lib/kendo-ui/js/jszip.min.js"></script>
+
+        @* Place Kendo UI scripts after jQuery *@
+        <script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+        <script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+
+        <link rel="stylesheet"
+              href="https://kendo.cdn.telerik.com/2016.3.1118/styles/kendo.common.min.css"
+              asp-fallback-href="~/lib/kendo-ui/styles/kendo.common.min.css"
+              asp-fallback-test-class="k-common-test-class"
+              asp-fallback-test-property="opacity" asp-fallback-test-value="0" />
+
+        <link rel="stylesheet"
+              href="https://kendo.cdn.telerik.com/2016.3.1118/styles/kendo.flat.min.css"
+              asp-fallback-href="~/lib/kendo-ui/styles/kendo.flat.min.css"
+              asp-fallback-test-class="k-theme-test-class"
+              asp-fallback-test-property="opacity" asp-fallback-test-value="0" />
+
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.1.1.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery">
+        </script>
+
+        <script src="~/lib/jquery-ajax-unobtrusive/jquery.unobtrusive-ajax.min.js" asp-append-version="true"></script>
+
+        @*<script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+                    asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+                    asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal">
+            </script>*@
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+
+        <script src="~/lib/kendo-ui/js/jszip.min.js" asp-append-version="true"></script>
+
+        @*  Place Kendo UI scripts after jQuery *@
+        <script src="https://kendo.cdn.telerik.com/2016.3.1118/js/kendo.all.min.js"
+                asp-fallback-src="~/lib/kendo-ui/js/kendo.all.min.js"
+                asp-fallback-test="window.kendo">
+        </script>
+        <script src="https://kendo.cdn.telerik.com/2016.3.1118/js/kendo.aspnetmvc.min.js"
+                asp-fallback-src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"
+                asp-fallback-test="kendo.data.transports['aspnetmvc-ajax']">
+        </script>
+    </environment>
+</head>
+<body>
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <div class="col-md-8">
+                <a href="@Url.Action("List", "HomestayStudent")">
+                    <div style="background-image: url('../images/logo.png'); height: 48px; margin-top: 10px; margin-bottom: 10px; background-repeat: no-repeat;"></div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <form asp-controller="User" asp-action="Logout" style="float: right;">
+                    <img src="../images/Circled User Male-48.png" style="margin: 10px;" />
+                    <b>@ViewData["Profile"]</b>
+                    <span style="margin-right: 15px;"></span>
+                    @(Html.Kendo().Button().Name("buttonLogout").HtmlAttributes(new {type = "submit", @class = "k-submit", style = "width:100px;"}).Content("Logout"))
+                </form>
+            </div>
+        </div>
+
+        <div class="row k-header">
+
+            @(Html.Kendo().Menu().Name("Menu").Items(items =>
+        {
+            items.Add().Text("Homestay").Action("List", "Homestay").ImageUrl("~/images/Bedroom-48.png").ImageHtmlAttributes(new { @class = "menu_icon" })
+                .Items(children =>
+                {
+                    children.Add().Text("Manage Homestay Host Information").Action("List", "Homestay");
+                });
+
+            items.Add().Text("Student").Action("List", "Student").ImageUrl("~/images/Students-48.png").ImageHtmlAttributes(new { @class = "menu_icon" })
+                .Items(children =>
+                {
+                    children.Add().Text("Manage Student Information").Action("List", "Student");
+                });
+
+            items.Add().Text("HomestayStudent").Action("List", "HomestayStudent").ImageUrl("~/images/Front Desk-48.png").ImageHtmlAttributes(new { @class = "menu_icon" })
+                .Items(children =>
+                {
+                    children.Add().Text("Manage Homestay & Student Contract").Action("List", "HomestayStudent");
+                });
+
+            items.Add().Text("User").Action("List", "User").ImageUrl("~/images/Collaborator Male-48.png").ImageHtmlAttributes(new { @class = "menu_icon" })
+                .Items(children =>
+                {
+                    children.Add().Text("Manage Login User Information").Action("List", "User");
+                });
+        }))
+        </div>
+
+        <div style="margin-top: 5px;"></div>
+
+        @RenderBody()
+
+    </div>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

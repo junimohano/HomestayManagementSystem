@@ -1,0 +1,285 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model Student
+
+<div id="updateWrapper">
+    <form asp-controller="Student" asp-action="SetStudent" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateWrapper" data-ajax-begin="formStudentBegin">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.StudentId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.StudentId)
+            @Html.HiddenFor(x => x.SiteId)
+            @Html.HiddenFor(x => x.SiteLocationId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.ProfileFileName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @if (!string.IsNullOrEmpty(Model.ProfileFileName))
+                    {
+                        @*<img src="/resize/Upload/StudentProfile/2_Untitled.jpg" />*@
+                        <img src="@Url.Content(ConstValue.GetImageFileUrl(ConstValue.FileType.StudentProfile, Model.ProfileFileName))" width="200" height="200" />
+                    }
+                    @(Html.Kendo().TextBoxFor(x => x.ProfileFileName).HtmlAttributes(new { @class = "form-control", style = "width:100%;", @readonly = "readonly" }))
+
+                    @(Html.Kendo().Upload()
+                          .Name("uploadStudent")
+                          .Multiple(false)
+                          .Enable(@Model.StudentId != 0)
+                          .Events(x => x.Success("onStudentSuccess").Select("onStudentSelect"))
+                          .Async(x => x.Save("SaveFile", "Common", new { fileType = ConstValue.FileType.StudentProfile, id = @Model.StudentId, previousFileName = @Model.ProfileFileName })
+                              .Remove("RemoveFile", "Common", new { fileType = ConstValue.FileType.StudentProfile })
+                              .SaveField("files")
+                          )
+                          .Validation(validation => validation.MaxFileSize(3145728).AllowedExtensions(new string[] { ".jpg", ".png" }))
+                    )
+                    <em>only <strong>JPG, PNG</strong></em>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.SiteId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().ComboBox()
+                          .Name("sites")
+                          .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                          .Placeholder("Select site...")
+                          .DataTextField("Name")
+                          .DataValueField("SiteId")
+                          .Value(@Model.SiteId == 0 ? "" : Model.SiteId.ToString())
+                          .Suggest(true)
+                          .Filter("contains")
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetSites", "Common");
+                              });
+                          })
+                    )
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.SiteLocationId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+
+                    @(Html.Kendo().ComboBox()
+                          .Name("siteLocations")
+                          .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                          .Placeholder("Select site location...")
+                          .DataTextField("Name")
+                          .DataValueField("SiteLocationId")
+                          .Value(@Model.SiteLocationId == 0 ? "" : Model.SiteLocationId.ToString())
+                          .Suggest(true)
+                          .Filter("contains")
+                          .DataSource(source =>
+                          {
+                              source.Read(read =>
+                              {
+                                  read.Action("GetSiteLocations", "Common")
+                                      .Data("filterSiteLocations");
+                              })
+                                  .ServerFiltering(true);
+                          })
+                          .AutoBind(false)
+                          .Enable(false)
+                          .CascadeFrom("sites")
+                    )
+                    <script>
+                        function filterSiteLocations() {
+                            return {
+                                siteId: $("#sites").val()
+                            };
+                        }
+                    </script>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.StudentNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.StudentNo).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.FirstName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.LastName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Gender, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().CheckBoxFor(x => x.Gender).Label("Is Male").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Phone, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().MaskedTextBoxFor(x => x.Phone).Mask("(999) 000-0000").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.Email).HtmlAttributes(new { @class = "form-control", type = "email", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Address, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.Address).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.PostCode, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().MaskedTextBoxFor(x => x.PostCode).Mask("L0L 0L0").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.IsActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().CheckBoxFor(x => x.IsActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonSave")
+                          .Events(x => x.Click("saveClicked"))
+                          .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                          .Content("Save"))
+                </div>
+
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonClose")
+                          .Events(x => x.Click("closeClicked"))
+                          .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" })
+                          .Content("Close"))
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formStudentBegin(e) {
+        $("#buttonSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    $(document).ready(function () {
+
+    });
+
+    function onStudentSelect(e) {
+        e.files[0].name = @Model.StudentId + "_" + e.files[0].name;
+    }
+
+    function onStudentSuccess(e) {
+        switch (e.operation) {
+            case "upload":
+                $("#ProfileFileName").val(e.files[0].name);
+                break;
+            case "remove":
+                $("#ProfileFileName").val("");
+                break;
+        }
+    }
+
+    function closeClicked(e) {
+        closePopup(false);
+    }
+
+    function saveClicked(e) {
+        $("#SiteId").val($("#sites").data("kendoComboBox").value());
+        $("#SiteLocationId").val($("#siteLocations").data("kendoComboBox").value());
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closePopup(true);
+        </script>
+    }
+}

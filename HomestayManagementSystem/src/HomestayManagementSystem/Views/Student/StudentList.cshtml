@@ -1,0 +1,119 @@
+﻿@using HomestayManagementSystem.Models
+@{
+    ViewData["Title"] = nameof(Student);
+}
+
+<div class="container-fluid">
+    <h5>Student List</h5>
+</div>
+
+@(Html.Kendo().Grid<Student>().Name("grid").Columns(columns =>
+{
+    columns.Bound(x => x.StudentId).Width(80).Title("No");
+    columns.Bound(x => x.SiteName).Width(110).Filterable(ftb => ftb.Multi(true).Search(true).CheckAll(true)).Title("Site");
+    columns.Bound(x => x.SiteLocation.Name).Width(140).Filterable(ftb => ftb.Multi(true).Search(true).CheckAll(true)).Title("SiteLocation");
+    columns.Bound(x => x.FirstName).Width(170);
+    columns.Bound(x => x.LastName).Width(170);
+    columns.Bound(x => x.StudentNo).Width(170).Title("Student No");
+    columns.Bound(x => x.Gender).ClientTemplate(" #= Gender ? 'Male' : 'Female' # ").Filterable(ftb => ftb.Multi(true)).Width(100);
+    columns.Bound(x => x.Phone).Format("{0:(###) ###-####}").Width(140);
+    columns.Bound(x => x.Address).Width(400);
+    columns.Bound(x => x.IsActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+    columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+    columns.Bound(x => x.CreatedUserName).Width(200);
+    columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+    columns.Bound(x => x.UpdatedUserName).Width(200);
+})
+    //.ClientDetailTemplateId("detail-template")
+    .ToolBar(t => t.ClientTemplateId("customClientTemplate"))
+    .Filterable(x => x.Extra(false))
+    .Scrollable(s => s.Height(840))
+    .Resizable(x => x.Columns(true))
+//    .Groupable(true)
+    .Sortable()
+    .Selectable(x => x.Mode(GridSelectionMode.Single))
+    .Pageable(pageable => pageable
+        .Refresh(true)
+        .PageSizes(true)
+        .ButtonCount(10)
+    )
+    .Excel(excel => excel
+        .FileName("Student List.xlsx")
+        .Filterable(true)
+        .ProxyURL(Url.Action("SaveExcelExport", "Common"))
+        .AllPages(true)
+    )
+    .Events(x => x.Change("onChange"))
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .Read(read => read.Action("Read", "Student"))
+        .PageSize(18)
+        .Filter(x => x.Add(x1 => x1.IsActive).IsEqualTo(true))
+//        .ServerOperation(false)
+        .Model(x =>
+        {
+            x.Id(x1 => x1.StudentId);
+        })
+    ))
+
+    @(Html.Kendo().Window()
+        .Name("studentPopup")
+        .Title("Student Detail")
+        .LoadContentFrom("StudentDetailPartial", "Student")
+        .Events(x=>x.Activate("studentPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .Pinned(true)
+        .Scrollable(true)
+        .MinWidth(400)
+        .MaxWidth(400)
+        .Height(650)
+    )
+
+<script type="text/x-kendo-template" id="customClientTemplate">
+    <a class='k-button k-button-icontext' onClick="openDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add Student</a>
+    <a class='k-button k-button-icontext k-grid-excel'><img src="../images/Microsoft Excel-48.png" class="submenu_icon" /> Export to Excel</a>
+</script>
+
+@*<script id="detail-template" type="text/x-kendo-template">
+        Product Details:
+        <div>Product Name: #: UserId # </div>
+        <div>Units In Stock: #: FirstName #</div>
+    </script>*@
+
+<script type="text/javascript">
+
+    function studentPopupActivate(e) {
+        $('#studentPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#studentPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#studentPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function onChange(arg) {
+        var data = this.dataItem(this.select());
+        openDialog(data.id);
+    }
+
+    function closePopup(isRefresh) {
+        $("#studentPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function openDialog(studentId) {
+        var studentPopup = $("#studentPopup").data("kendoWindow");
+        studentPopup.refresh({
+            url: "/Student/StudentDetailPartial/",
+            data: { studentId: studentId }
+        });
+
+        studentPopup.open();
+    }
+</script>

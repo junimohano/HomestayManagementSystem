@@ -1,0 +1,150 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model HomestayContract
+
+<div id="updateHomestayContactWrapper">
+    <form asp-controller="Homestay" asp-action="SetHomestayContract" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateHomestayContactWrapper" data-ajax-begin="formHomestayContactBegin">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.HomestayContractId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.HomestayContractId)
+            @Html.HiddenFor(x => x.HomestayId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.ContractDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().DatePickerFor(x => x.ContractDate).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.ContractFileName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.ContractFileName).HtmlAttributes(new { @class = "form-control", style = "width:100%;", @readonly = "readonly" }))
+
+                    @*<div>Maximum allowed file size is <strong>3MB</strong>.</div>*@
+                    @(Html.Kendo().Upload()
+                          .Name("uploadHomestayContact")
+                          .Multiple(false)
+                          .Enable(@Model.HomestayContractId != 0)
+                          .Events(x => x.Success("onHomestayContactSuccess").Select("onHomestayContactSelect"))
+                          .Async(x => x.Save("SaveFile", "Common", new { fileType = ConstValue.FileType.HomestayContract, id = @Model.HomestayContractId, previousFileName = @Model.ContractFileName })
+                              .Remove("RemoveFile", "Common", new { fileType = ConstValue.FileType.HomestayContract })
+                              .SaveField("files")
+                          )
+                          .Validation(validation => validation.MaxFileSize(3145728))
+                    )
+
+                    @if (!string.IsNullOrEmpty(Model.ContractFileName))
+                    {
+                        @Html.ActionLink("Download", "DownloadFile", "Common", new { fileType = ConstValue.FileType.HomestayContract, id = @Model.HomestayContractId }, new { type = "button", @class = "k-button k-button-icontext", style = "width:150px" })
+                    }
+
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.IsContractActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-8">
+                    @(Html.Kendo().CheckBoxFor(x => x.IsContractActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayContractSave")
+                          .Events(x => x.Click("saveHomestayContractClicked"))
+                          .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                          .Content("Save"))
+                </div>
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayContractClose")
+                          .Events(x => x.Click("closeHomestayContractClicked"))
+                          .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" })
+                          .Content("Close"))
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formHomestayContactBegin(e) {
+        $("#buttonHomestayContractSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    $(document).ready(function () {
+
+    });
+
+    function onHomestayContactSelect(e) {
+        e.files[0].name = @Model.HomestayContractId + "_" + e.files[0].name;
+    }
+
+    function onHomestayContactSuccess(e) {
+        switch (e.operation) {
+            case "upload":
+                $("#ContractFileName").val(e.files[0].name);
+                //console.log('upload --> ' + e.files[0].name);
+                break;
+            case "remove":
+                $("#ContractFileName").val("");
+                //console.log('remove --> ' + e.files[0].name);
+                break;
+        }
+    }
+
+    function closeHomestayContractClicked(e) {
+        closeHomestayContractPopup(false);
+    }
+
+    function saveHomestayContractClicked(e) {
+        //$("#FilePath").val($("#FilePath").val());
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closeHomestayContractPopup(true);
+        </script>
+    }
+}

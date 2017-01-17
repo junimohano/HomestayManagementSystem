@@ -1,0 +1,129 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model HomestayHouseHold
+
+<div id="updateHomestayHouseHoldWrapper">
+    <form asp-controller="Homestay" asp-action="SetHomestayHouseHold" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateHomestayHouseHoldWrapper" data-ajax-begin="formHomestayHouseHoldBegin">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.HomestayHouseHoldId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.HomestayHouseHoldId)
+            @Html.HiddenFor(x => x.HomestayId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().TextBoxFor(x => x.FirstName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().TextBoxFor(x => x.LastName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Gender, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().CheckBoxFor(x => x.Gender).Label("Is Male").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Birthday, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().DatePickerFor(x => x.Birthday).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.IsHouseHoldActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-7">
+                    @(Html.Kendo().CheckBoxFor(x => x.IsHouseHoldActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                <div class="col-md-4">
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayHouseHoldSave")
+                          .Events(x => x.Click("saveHomestayHouseHoldClicked"))
+                          .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                          .Content("Save"))
+                </div>
+                <div class="offset-md-1 col-md-4">
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayHouseHoldClose")
+                          .Events(x => x.Click("closeHomestayHouseHoldClicked"))
+                          .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" })
+                          .Content("Close"))
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formHomestayHouseHoldBegin(e) {
+        $("#buttonHomestayHouseHoldSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    function closeHomestayHouseHoldClicked(e) {
+        closeHomestayHouseHoldPopup(false);
+    }
+
+    function saveHomestayHouseHoldClicked(e) {
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closeHomestayHouseHoldPopup(true);
+        </script>
+    }
+}

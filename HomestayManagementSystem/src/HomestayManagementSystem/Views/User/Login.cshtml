@@ -1,0 +1,116 @@
+﻿@using HomestayManagementSystem.Models
+@model User
+@{
+    Layout = "";
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Homestay Management System</title>
+    <link rel="shortcut icon" href="~/images/logo_loyalist_24x24.png" />
+
+    <environment names="Development">
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
+        <link rel="stylesheet" href="~/css/site.css" />
+
+        <link rel="stylesheet" href="~/lib/kendo-ui/styles/kendo.common.min.css" />
+        <link rel="stylesheet" href="~/lib/kendo-ui/styles/kendo.flat.min.css" />
+
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+
+        @* Place Kendo UI scripts after jQuery *@
+        <script src="~/lib/kendo-ui/js/kendo.all.min.js"></script>
+        <script src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"></script>
+    </environment>
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css"
+              asp-fallback-href="~/lib/bootstrap/dist/css/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+
+        <link rel="stylesheet"
+              href="https://kendo.cdn.telerik.com/2016.3.1118/styles/kendo.common.min.css"
+              asp-fallback-href="~/lib/kendo-ui/styles/kendo.common.min.css"
+              asp-fallback-test-class="k-common-test-class"
+              asp-fallback-test-property="opacity" asp-fallback-test-value="0" />
+
+        <link rel="stylesheet"
+              href="https://kendo.cdn.telerik.com/2016.3.1118/styles/kendo.flat.min.css"
+              asp-fallback-href="~/lib/kendo-ui/styles/kendo.flat.min.css"
+              asp-fallback-test-class="k-theme-test-class"
+              asp-fallback-test-property="opacity" asp-fallback-test-value="0" />
+
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.1.1.min.js"
+                asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+                asp-fallback-test="window.jQuery">
+        </script>
+
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
+
+        @*  Place Kendo UI scripts after jQuery *@
+        <script src="https://kendo.cdn.telerik.com/2016.3.1118/js/kendo.all.min.js"
+                asp-fallback-src="~/lib/kendo-ui/js/kendo.all.min.js"
+                asp-fallback-test="window.kendo">
+        </script>
+        <script src="https://kendo.cdn.telerik.com/2016.3.1118/js/kendo.aspnetmvc.min.js"
+                asp-fallback-src="~/lib/kendo-ui/js/kendo.aspnetmvc.min.js"
+                asp-fallback-test="kendo.data.transports['aspnetmvc-ajax']">
+        </script>
+    </environment>
+
+</head>
+<body>
+
+    <div class="container offset-md-4 col-md-4" style="margin-top: 50px;">
+
+        <form asp-controller="User" asp-action="Login">
+
+            <div class="form-horizontal">
+                <h4><img src="../images/logo_loyalist_24x24.png" style="margin-top: -5px;" /> Homestay Management System</h4>
+                <hr />
+                <br />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.LoginId, htmlAttributes: new { @class = "control-label offset-md-2 col-md-2" })
+                    <div class="col-md-6">
+                        @(Html.Kendo().TextBoxFor(x => x.LoginId).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Password, htmlAttributes: new { @class = "control-label offset-md-2 col-md-2" })
+                    <div class="col-md-6">
+                        @(Html.Kendo().TextBoxFor(x => x.Password).Format("*").HtmlAttributes(new { @class = "form-control", style = "width:100%;", type = "password", AutoCompleteType = "Disabled" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    <div class="offset-md-2 col-md-8">
+                        @(Html.Kendo().Button()
+                                  .Name("buttonLogin")
+                                  .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                                  .Content("Login"))
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(function () {
+            $("form").kendoValidator();
+        });
+    </script>
+
+</body>
+</html>

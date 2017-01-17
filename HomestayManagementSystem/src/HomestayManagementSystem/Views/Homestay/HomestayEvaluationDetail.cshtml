@@ -1,0 +1,226 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model HomestayEvaluation
+
+<div id="updateEvaluationWrapper">
+    <form asp-controller="Homestay" asp-action="SetHomestayEvaluation" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateEvaluationWrapper" data-ajax-begin="formHomestayEvaluationBegin">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.HomestayEvaluationId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.HomestayEvaluationId)
+            @Html.HiddenFor(x => x.HomestayId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.EvaluationDate, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().DatePickerFor(x => x.EvaluationDate).Format("{0:d}").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Location, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.Location).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.EnglishProficiency, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.EnglishProficiency).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.CriminalRecordCheck, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.CriminalRecordCheck).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.LivingSpace, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.LivingSpace).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.QualityOfLivingSpace, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.QualityOfLivingSpace).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.FinancialStability, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.FinancialStability).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.HostingExperience, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.HostingExperience).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.PaymentFlexibility, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().IntegerTextBoxFor(x => x.PaymentFlexibility).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <br />
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.EvaluationFileName, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().TextBoxFor(x => x.EvaluationFileName).HtmlAttributes(new { @class = "form-control", style = "width:100%;", @readonly = "readonly" }))
+                    @*<div>Maximum allowed file size is <strong>3MB</strong>.</div>*@
+                    @(Html.Kendo().Upload()
+                          .Name("uploadHomestayEvaluation")
+                          .Multiple(false)
+                          .Enable(@Model.HomestayEvaluationId != 0)
+                          .Events(x => x.Success("onHomestayEvaluationSuccess").Select("onHomestayEvaluationSelect"))
+                          .Async(x => x.Save("SaveFile", "Common", new { fileType = ConstValue.FileType.HomestayEvaluation, id = @Model.HomestayEvaluationId, previousFileName = @Model.EvaluationFileName })
+                              .Remove("RemoveFile", "Common", new { fileType = ConstValue.FileType.HomestayEvaluation })
+                              .SaveField("files")
+                          )
+                          .Validation(validation => validation.MaxFileSize(3145728))
+                    )
+                    @if (!string.IsNullOrEmpty(Model.EvaluationFileName))
+                    {
+                        @Html.ActionLink("Download", "DownloadFile", "Common", new { fileType = ConstValue.FileType.HomestayEvaluation, id = @Model.HomestayEvaluationId }, new { type = "button", @class = "k-button k-button-icontext", style = "width:150px;" })
+                    }
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                @Html.LabelFor(x => x.IsEvaluationActive, htmlAttributes: new { @class = "control-label col-md-4" })
+                <div class="col-md-6">
+                    @(Html.Kendo().CheckBoxFor(x => x.IsEvaluationActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <div class="form-group">
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayEvaluationSave")
+                          .Events(x => x.Click("saveHomestayEvaluationClicked"))
+                          .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                          .Content("Save"))
+                </div>
+                <div class="col-md-5">
+                    @(Html.Kendo().Button()
+                          .Name("buttonHomestayEvaluationClose")
+                          .Events(x => x.Click("closeHomestayEvaluationClicked"))
+                          .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" })
+                          .Content("Close"))
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formHomestayEvaluationBegin(e) {
+        $("#buttonHomestayEvaluationSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    $(document).ready(function () {
+
+    });
+
+    function onHomestayEvaluationSelect(e) {
+        e.files[0].name = @Model.HomestayEvaluationId + "_" + e.files[0].name;
+    }
+
+    function onHomestayEvaluationSuccess(e) {
+        switch (e.operation) {
+            case "upload":
+                $("#EvaluationFileName").val(e.files[0].name);
+                //console.log('upload --> ' + e.files[0].name);
+                break;
+            case "remove":
+                $("#EvaluationFileName").val("");
+                //console.log('remove --> ' + e.files[0].name);
+                break;
+        }
+    }
+
+    function closeHomestayEvaluationClicked(e) {
+        closeHomestayEvaluationPopup(false);
+    }
+
+    function saveHomestayEvaluationClicked(e) {
+        //$("#SiteId").val($("#sites").data("kendoComboBox").value());
+        //$("#SiteLocationId").val($("#siteLocations").data("kendoComboBox").value());
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closeHomestayEvaluationPopup(true);
+        </script>
+    }
+}

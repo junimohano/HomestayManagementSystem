@@ -1,0 +1,629 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model Homestay
+
+@*+------------------------+-----------------------------+
+    |      AjaxOptions       |       HTML attribute        |
+    +------------------------+-----------------------------+
+    | Confirm                | data-ajax-confirm           |
+    | HttpMethod             | data-ajax-method            |
+    | InsertionMode          | data-ajax-mode              |
+    | LoadingElementDuration | data-ajax-loading-duration  |
+    | LoadingElementId       | data-ajax-loading           |
+    | OnBegin                | data-ajax-begin             |
+    | OnComplete             | data-ajax-complete          |
+    | OnFailure              | data-ajax-failure           |
+    | OnSuccess              | data-ajax-success           |
+    | UpdateTargetId         | data-ajax-update            |
+    | Url                    | data-ajax-url               |
+    +------------------------+-----------------------------+*@
+
+<div id="updateWrapper">
+    <form asp-controller="Homestay" asp-action="SetHomestay" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateWrapper" data-ajax-begin="formHomestayBegin">
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.HomestayId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+
+            <div class="col-md-4">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                @Html.HiddenFor(x => x.HomestayId)
+                @Html.HiddenFor(x => x.CreatedDate)
+                @Html.HiddenFor(x => x.CreatedUserId)
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.ProfileFileName, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @if (!string.IsNullOrEmpty(Model.ProfileFileName))
+                        {
+                            <img src="@Url.Content(ConstValue.GetImageFileUrl(ConstValue.FileType.HomestayProfile, Model.ProfileFileName))" width="200" height="200" />
+                        }
+                        @(Html.Kendo().TextBoxFor(x => x.ProfileFileName).HtmlAttributes(new { @class = "form-control", style = "width:100%;", @readonly = "readonly" }))
+
+                        @(Html.Kendo().Upload()
+                              .Name("uploadHomestay")
+                              .Multiple(false)
+                              .Enable(@Model.HomestayId != 0)
+                              .Events(x => x.Success("onHomestaySuccess").Select("onHomestaySelect"))
+                              .Async(x => x.Save("SaveFile", "Common", new { fileType = ConstValue.FileType.HomestayProfile, id = @Model.HomestayId, previousFileName = @Model.ProfileFileName })
+                                  .Remove("RemoveFile", "Common", new { fileType = ConstValue.FileType.HomestayProfile })
+                                  .SaveField("files")
+                              )
+                              .Validation(validation => validation.MaxFileSize(3145728).AllowedExtensions(new string[] { ".jpg", ".png" }))
+                        )
+                        <em>only <strong>JPG, PNG</strong></em>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.FirstName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.LastName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Phone, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().MaskedTextBoxFor(x => x.Phone).Mask("(999) 000-0000").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Email, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Email).HtmlAttributes(new { @class = "form-control", type = "email", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Address, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Address).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.PostCode, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().MaskedTextBoxFor(x => x.PostCode).Mask("L0L 0L0").HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Room, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().IntegerTextBoxFor(x => x.Room).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Students, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Students).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Language, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Language).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.VideoUrl, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.VideoUrl).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.IsActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().CheckBoxFor(x => x.IsActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    <div class="col-md-4">
+                        @(Html.Kendo().Button().Name("buttonSave").Events(x => x.Click("saveClicked")).HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" }).Content("Save"))
+                    </div>
+                    <div class="offset-md-1 col-md-4">
+                        @(Html.Kendo().Button().Name("buttonClose").Events(x => x.Click("closeClicked")).HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" }).Content("Close"))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+            </div>
+
+            <div class="col-md-7">
+                @(Html.Kendo().TabStrip()
+          .Name("tabstrip")
+          .Animation(animation => animation.Open(effect => effect.Fade(FadeDirection.In)))
+          .HtmlAttributes(new { style = "height:500px;" })
+          .Items(tabstrip =>
+          {
+
+          tabstrip.Add().Text("HouseHold").ImageUrl("~/images/Family Man Woman-48.png").ImageHtmlAttributes(new { @class = "submenu_icon" })
+                  .Selected(true)
+                  .Content(@<text>
+                @(Html.Kendo().Grid<HomestayHouseHold>().Name("gridHomestayHouseHold").Columns(columns =>
+            {
+                columns.Bound(x => x.HomestayHouseHoldId).Width(80).Title("No");
+                columns.Bound(x => x.FirstName).Width(170);
+                columns.Bound(x => x.LastName).Width(170);
+                columns.Bound(x => x.Gender).ClientTemplate(" #= Gender ? 'Male' : 'Female' # ").Filterable(ftb => ftb.Multi(true)).Width(100);
+                columns.Bound(x => x.Birthday).Format("{0:d}").Width(140);
+                columns.Bound(x => x.IsHouseHoldActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+                columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.CreatedUserName).Width(200);
+                columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.UpdatedUserName).Width(200);
+            })
+                            .ToolBar(t => t.ClientTemplateId("customClientTemplateHouseHold"))
+                            .Filterable(x => x.Extra(false))
+                            .Scrollable(s => s.Height(415))
+                            .Sortable()
+                            .Selectable(x => x.Mode(GridSelectionMode.Single))
+                            .Events(x => x.Change("onHomestayHouseHoldChange"))
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Filter(x => x.Add(x1 => x1.IsHouseHoldActive).IsEqualTo(true))
+                                .Read(read => read.Action("ReadHomestayHouseHold", "Homestay", new { homestayId = @Model.HomestayId }))
+                                .Model(x =>
+                                {
+                                    x.Id(x1 => x1.HomestayHouseHoldId);
+                                })
+                            ))
+                </text>);
+
+                    tabstrip.Add().Text("Contract").ImageUrl("~/images/Signature-48.png").ImageHtmlAttributes(new { @class = "submenu_icon" })
+                        .Content(@<text>
+                @(Html.Kendo().Grid<HomestayContract>().Name("gridHomestayContract").Columns(columns =>
+            {
+                columns.Bound(x => x.HomestayContractId).Width(80).Title("No");
+                columns.Bound(x => x.ContractDate).Format("{0:d}").Width(110);
+                columns.Bound(x => x.ContractFileName).Width(400);
+                columns.Bound(x => x.IsContractActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+                columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.CreatedUserName).Width(200);
+                columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.UpdatedUserName).Width(200);
+            })
+                            .ToolBar(t => t.ClientTemplateId("customClientTemplateContract"))
+                            .Filterable(x => x.Extra(false))
+                            .Scrollable(s => s.Height(415))
+                            .Sortable()
+                            .Selectable(x => x.Mode(GridSelectionMode.Single))
+                            .Events(x => x.Change("onHomestayContractChange"))
+                            .DataSource(dataSource => dataSource
+                                .Ajax()
+                                .Filter(x => x.Add(x1 => x1.IsContractActive).IsEqualTo(true))
+                                .Read(read => read.Action("ReadHomestayContract", "Homestay", new { homestayId = @Model.HomestayId }))
+                                .Model(x =>
+                                {
+                                    x.Id(x1 => x1.HomestayContractId);
+                                })
+                            ))
+                </text>);
+
+                        tabstrip.Add().Text("Evaluation").ImageUrl("~/images/Rating-48.png").ImageHtmlAttributes(new { @class = "submenu_icon" })
+                            .Content(@<text>
+                @(Html.Kendo().Grid<HomestayEvaluation>().Name("gridHomestayEvaluation").Columns(columns =>
+            {
+                columns.Bound(x => x.HomestayEvaluationId).Width(80).Title("No");
+                columns.Bound(x => x.EvaluationDate).Format("{0:d}").Width(110);
+                columns.Bound(x => x.Score).Width(90);
+                columns.Bound(x => x.EvaluationFileName).Width(400);
+                columns.Bound(x => x.IsEvaluationActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+                columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.CreatedUserName).Width(200);
+                columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.UpdatedUserName).Width(200);
+            })
+                                .ToolBar(t => t.ClientTemplateId("customClientTemplateEvaluation"))
+                                .Filterable(x => x.Extra(false))
+                                .Scrollable(s => s.Height(415))
+                                .Sortable()
+                                .Selectable(x => x.Mode(GridSelectionMode.Single))
+                                .Events(x => x.Change("onHomestayEvaluationChange"))
+                                .DataSource(dataSource => dataSource
+                                    .Ajax()
+                                    .Filter(x => x.Add(x1 => x1.IsEvaluationActive).IsEqualTo(true))
+                                    .Read(read => read.Action("ReadHomestayEvaluation", "Homestay", new { homestayId = @Model.HomestayId }))
+                                    .Model(x =>
+                                    {
+                                        x.Id(x1 => x1.HomestayEvaluationId);
+                                    })
+                                ))
+                </text>);
+
+                        tabstrip.Add().Text("PoliceCheck").ImageUrl("~/images/Policeman Female-48.png").ImageHtmlAttributes(new { @class = "submenu_icon" })
+                            .Content(@<text>
+                @(Html.Kendo().Grid<HomestayPoliceCheck>().Name("gridHomestayPoliceCheck").Columns(columns =>
+            {
+                columns.Bound(x => x.HomestayPoliceCheckId).Width(80).Title("No");
+                columns.Bound(x => x.PoliceCheckDate).Format("{0:d}").Width(110);
+                columns.Bound(x => x.PoliceCheckFileName).Width(400);
+                columns.Bound(x => x.IsPoliceCheckActive).Filterable(ftb => ftb.Multi(true)).Width(110);
+                columns.Bound(x => x.CreatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.CreatedUserName).Width(200);
+                columns.Bound(x => x.UpdatedDate).Format("{0:g}").Width(180);
+                columns.Bound(x => x.UpdatedUserName).Width(200);
+            })
+                                .ToolBar(t => t.ClientTemplateId("customClientTemplatePoliceCheck"))
+                                .Filterable(x => x.Extra(false))
+                                .Scrollable(s => s.Height(415))
+                                .Sortable()
+                                .Selectable(x => x.Mode(GridSelectionMode.Single))
+                                .Events(x => x.Change("onHomestayPoliceCheckChange"))
+                                .DataSource(dataSource => dataSource
+                                    .Ajax()
+                                    .Filter(x => x.Add(x1 => x1.IsPoliceCheckActive).IsEqualTo(true))
+                                    .Read(read => read.Action("ReadHomestayPoliceCheck", "Homestay", new { homestayId = @Model.HomestayId }))
+                                    .Model(x =>
+                                    {
+                                        x.Id(x1 => x1.HomestayPoliceCheckId);
+                                    })
+                                ))
+                </text>);
+
+                         tabstrip.Add().Text("Video").ImageUrl("~/images/YouTube 2-48.png").ImageHtmlAttributes(new { @class = "submenu_icon" })
+                             .Content(@<text>
+                @{
+                    var videoUrl = ViewData["SelectedVideoUrl"]?.ToString();
+                    if (!string.IsNullOrEmpty(videoUrl))
+                    {
+                        <iframe width="100%" height="415" src="@ViewData["SelectedVideoUrl"]?.ToString()" frameborder="0" allowfullscreen></iframe>
+                    }
+                    else
+                    {
+                        @Html.Label(string.Empty, "There is no video url.");
+                        <br />
+                        <br />
+                        @Html.Label(string.Empty, "To get video url,");
+                        <br />
+                        @Html.Label(string.Empty, "1. right click on youtube video.");
+                        <br />
+                        @Html.Label(string.Empty, "2. click copy embed code.");
+                        <br />
+                        @Html.Label(string.Empty, "3. crop only video url.");
+                        <br />
+                        @Html.Label(string.Empty, "ex) https://www.youtube.com/embed/_KcpK-q8-Fk?list=RDBgKOIv_xva0");
+                    }
+                }
+                </text>);
+                }))
+            </div>
+        </div>
+    </form>
+</div>
+
+@(Html.Kendo().Window()
+        .Name("homestayHouseHoldPopup")
+        .Title("Homestay HouseHold")
+        .LoadContentFrom("HomestayHouseHoldDetailPartial", "Homestay")
+        .Events(x => x.Activate("homestayHouseHoldPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .Pinned(true)
+        .Scrollable(true)
+        .MinWidth(400)
+        .MaxWidth(400)
+        .Height(400)
+)
+
+@(Html.Kendo().Window()
+        .Name("homestayContractPopup")
+        .Title("Homestay Contract")
+        .LoadContentFrom("HomestayContractDetailPartial", "Homestay")
+        .Events(x => x.Activate("homestayContractPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .Pinned(true)
+        .Scrollable(true)
+        .MinWidth(400)
+        .MaxWidth(400)
+        .Height(400)
+)
+
+@(Html.Kendo().Window()
+        .Name("homestayEvaluationPopup")
+        .Title("Homestay Evaluation")
+        .LoadContentFrom("HomestayEvaluationDetailPartial", "Homestay")
+        .Events(x => x.Activate("homestayEvaluationPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .Pinned(true)
+        .Scrollable(true)
+        .MinWidth(400)
+        .MaxWidth(400)
+        .Height(700)
+)
+
+@(Html.Kendo().Window()
+        .Name("homestayPoliceCheckPopup")
+        .Title("Homestay PoliceCheck")
+        .LoadContentFrom("HomestayPoliceCheckDetailPartial", "Homestay")
+        .Events(x => x.Activate("homestayPoliceCheckPopupActivate"))
+        .Draggable(true)
+        .Visible(false)
+        .AutoFocus(true)
+        .Modal(true)
+        .Pinned(true)
+        .Scrollable(true)
+        .MinWidth(400)
+        .MaxWidth(400)
+        .Height(400)
+)
+
+<script type="text/x-kendo-template" id="customClientTemplateHouseHold">
+    @if (@Model.HomestayId != 0)
+    {
+        <a class='k-button k-button-icontext' onClick="openHomestayHouseHoldDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add HouseHold</a>
+    }
+</script>
+
+<script type="text/x-kendo-template" id="customClientTemplateContract">
+    @if (@Model.HomestayId != 0)
+    {
+        <a class='k-button k-button-icontext' onClick="openHomestayContractDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add Contract</a>
+    }
+</script>
+
+<script type="text/x-kendo-template" id="customClientTemplateEvaluation">
+    @if (@Model.HomestayId != 0)
+    {
+        <a class='k-button k-button-icontext' onClick="openHomestayEvaluationDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add Evaluation</a>
+    }
+</script>
+
+<script type="text/x-kendo-template" id="customClientTemplatePoliceCheck">
+    @if (@Model.HomestayId != 0)
+    {
+        <a class='k-button k-button-icontext' onClick="openHomestayPoliceCheckDialog(0);"><img src="../images/Add to Favorites-48.png" class="submenu_icon" /> Add PoliceCheck</a>
+    }
+</script>
+
+<script>
+
+    function formHomestayBegin(e) {
+        $("#buttonSave").data("kendoButton").enable(false);
+    }
+
+    function onHomestaySelect(e) {
+        e.files[0].name = @Model.HomestayId + "_" + e.files[0].name;
+    }
+
+    function onHomestaySuccess(e) {
+        switch (e.operation) {
+            case "upload":
+                $("#ProfileFileName").val(e.files[0].name);
+                break;
+            case "remove":
+                $("#ProfileFileName").val("");
+                break;
+        }
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    function onHomestayHouseHoldChange(arg) {
+        var data = this.dataItem(this.select());
+        openHomestayHouseHoldDialog(data.id);
+    }
+
+    function onHomestayContractChange(arg) {
+        var data = this.dataItem(this.select());
+        openHomestayContractDialog(data.id);
+    }
+
+    function onHomestayEvaluationChange(arg) {
+        var data = this.dataItem(this.select());
+        openHomestayEvaluationDialog(data.id);
+    }
+
+    function onHomestayPoliceCheckChange(arg) {
+        var data = this.dataItem(this.select());
+        openHomestayPoliceCheckDialog(data.id);
+    }
+
+    function closeHomestayHouseHoldPopup(isRefresh) {
+        $("#homestayHouseHoldPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#gridHomestayHouseHold').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function closeHomestayContractPopup(isRefresh) {
+        $("#homestayContractPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#gridHomestayContract').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function closeHomestayEvaluationPopup(isRefresh) {
+        $("#homestayEvaluationPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#gridHomestayEvaluation').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function closeHomestayPoliceCheckPopup(isRefresh) {
+        $("#homestayPoliceCheckPopup").data("kendoWindow").close();
+
+        if (isRefresh) {
+            var grid = $('#gridHomestayPoliceCheck').data('kendoGrid');
+            grid.dataSource.read();
+            grid.refresh();
+        }
+    }
+
+    function homestayHouseHoldPopupActivate(e) {
+        $('#homestayHouseHoldPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#homestayHouseHoldPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#homestayHouseHoldPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function homestayContractPopupActivate(e) {
+        $('#homestayContractPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#homestayContractPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#homestayContractPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function homestayEvaluationPopupActivate(e) {
+        $('#homestayEvaluationPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#homestayEvaluationPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#homestayEvaluationPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function homestayPoliceCheckPopupActivate(e) {
+        $('#homestayPoliceCheckPopup').closest(".k-window").css({
+            top: window.innerHeight / 2 - $('#homestayPoliceCheckPopup').parent()[0].scrollHeight / 2,
+            left: window.innerWidth / 2 - $('#homestayPoliceCheckPopup').parent()[0].scrollWidth / 2
+        });
+    }
+
+    function openHomestayHouseHoldDialog(homestayHouseHoldId) {
+        var homestayHouseHoldPopup = $("#homestayHouseHoldPopup").data("kendoWindow");
+        homestayHouseHoldPopup.refresh({
+            url: "/Homestay/HomestayHouseHoldDetailPartial/",
+            data: { homestayId: @Model.HomestayId, homestayHouseHoldId: homestayHouseHoldId }
+        });
+
+        homestayHouseHoldPopup.open();
+    }
+
+    function openHomestayContractDialog(homestayContractId) {
+        var homestayContractPopup = $("#homestayContractPopup").data("kendoWindow");
+        homestayContractPopup.refresh({
+            url: "/Homestay/HomestayContractDetailPartial/",
+            data: { homestayId: @Model.HomestayId, homestayContractId: homestayContractId }
+        });
+
+        homestayContractPopup.open();
+    }
+
+    function openHomestayEvaluationDialog(homestayEvaluationId) {
+        var homestayEvaluationPopup = $("#homestayEvaluationPopup").data("kendoWindow");
+        homestayEvaluationPopup.refresh({
+            url: "/Homestay/HomestayEvaluationDetailPartial/",
+            data: { homestayId: @Model.HomestayId, homestayEvaluationId: homestayEvaluationId }
+        });
+
+        homestayEvaluationPopup.open();
+    }
+
+    function openHomestayPoliceCheckDialog(homestayPoliceCheckId) {
+        var homestayPoliceCheckPopup = $("#homestayPoliceCheckPopup").data("kendoWindow");
+        homestayPoliceCheckPopup.refresh({
+            url: "/Homestay/HomestayPoliceCheckDetailPartial/",
+            data: { homestayId: @Model.HomestayId, homestayPoliceCheckId: homestayPoliceCheckId }
+        });
+
+        homestayPoliceCheckPopup.open();
+    }
+
+    $(document).ready(function () {
+
+    });
+
+    function closeClicked(e) {
+        closePopup(false);
+    }
+
+    function saveClicked(e) {
+        $("#SiteId").val($("#sites").data("kendoComboBox").value());
+        $("#SiteLocationId").val($("#siteLocations").data("kendoComboBox").value());
+    }
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closePopup(true);
+        </script>
+    }
+}

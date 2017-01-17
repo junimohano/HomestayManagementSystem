@@ -1,0 +1,226 @@
+﻿@using System.Threading.Tasks
+@using HomestayManagementSystem.Models
+@using HomestayManagementSystem.Utils
+@model User
+
+<div id="updateWrapper">
+    <form asp-controller="User" asp-action="SetUser" data-ajax="true" data-ajax-method="POST" data-ajax-mode="replace" data-ajax-update="#updateWrapper" data-ajax-begin="formUserBegin" data-ajax-loading="#test11">
+
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <h4>@(Model.UserId > 0 ? "Edit" : "Add")</h4>
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            @Html.HiddenFor(x => x.UserId)
+            @Html.HiddenFor(x => x.PermissionId)
+            @Html.HiddenFor(x => x.CreatedDate)
+            @Html.HiddenFor(x => x.CreatedUserId)
+            @Html.HiddenFor(x => x.SiteId)
+            @Html.HiddenFor(x => x.SiteLocationId)
+            @Html.Hidden("selectedUserSiteLocations")
+
+            <div class="col-md-7">
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.LoginId, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.LoginId)
+                              .Enable((@Model.UserId == 0))
+                              .HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Password, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Password).Format("*").HtmlAttributes(new { @class = "form-control", style = "width:100%;", type = "password", AutoCompleteType = "Disabled", Required = "notrequired" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.FirstName, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.FirstName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <br />
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.LastName, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.LastName).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.Permission, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().ComboBox()
+                              .Name("permissions")
+                              .HtmlAttributes(new { @class = "form-control", style = "width:100%;", required = "required" })
+                              .Placeholder("Select permission...")
+                              .DataTextField("Name")
+                              .DataValueField("PermissionId")
+                              .Value(@Model.PermissionId == 0 ? "" : Model.PermissionId.ToString())
+                              .Suggest(true)
+                              .Filter("contains")
+                              .DataSource(source =>
+                              {
+                                  source.Read(read =>
+                                  {
+                                      read.Action("GetPermissions", "Common");
+                                  });
+                              })
+                        )
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Remark, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().TextBoxFor(x => x.Remark).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    @Html.LabelFor(x => x.IsActive, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-7">
+                        @(Html.Kendo().CheckBoxFor(x => x.IsActive).HtmlAttributes(new { @class = "form-control", style = "width:100%;" }))
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="clearfix"></div>
+
+                <div class="form-group">
+                    <div class="col-md-4">
+                        @(Html.Kendo().Button()
+                            .Name("buttonSave")
+                            .Events(x => x.Click("saveClicked"))
+                            .HtmlAttributes(new { type = "submit", @class = "k-submit", style = "width:100%" })
+                            .Enable((int)ViewData["PermissionId"] != (int)ConstValue.PermissionType.User ||
+                                    (Model.UserId > 0 && Model.UserId == (int)ViewData["UserId"]))
+                            .Content("Save"))
+                    </div>
+
+                    <div class="offset-md-1 col-md-4">
+                        @(Html.Kendo().Button()
+                            .Name("buttonClose")
+                            .Events(x => x.Click("closeClicked"))
+                            .HtmlAttributes(new { type = "button", @class = "k-cancel", style = "width:100%" })
+                            .Content("Close"))
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h6>Site Location List</h6>
+
+                    @(Html.Kendo().TreeView()
+                          .Name("treeViewUserSiteLocations")
+                          .Checkboxes(checkboxes => checkboxes
+                              .Name("checkedFiles")
+                              .CheckChildren(true)
+                          )
+                          .DragAndDrop(true)
+                          .ExpandAll(true)
+                          .BindTo((IEnumerable<TreeViewItemModel>)ViewData["UserSiteLocations"])
+                    )
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    function formUserBegin(e) {
+        $("#buttonSave").data("kendoButton").enable(false);
+    }
+
+    $(function () {
+        $("form").kendoValidator();
+    });
+
+    @*function treeViewCheck(siteLocationId, isAdd) {
+            if (siteLocationId === 11111111111111) {
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("SetUserSiteLocation", "User")",
+                    data: { userId: @Model.UserId, siteLocationId: siteLocationId, isAdd: isAdd },
+                    dataType: "json",
+                    success: function(data) {
+
+                        $("#treeViewUserSiteLocations").data("kendoTreeView").dataSource.read();
+                        treeViewExpandAll();
+                    },
+                    error: function(data) {
+                        alert("Error");
+                    }
+                });
+            }
+        }*@
+
+    $(document).ready(function () {
+        $("#treeViewUserSiteLocations").data("kendoTreeView").expand(".k-item");
+    });
+
+    function closeClicked(e) {
+        closePopup(false);
+    }
+
+    function saveClicked(e) {
+        var checkedNodes = [];
+        var treeView = $("#treeViewUserSiteLocations").data("kendoTreeView");
+        checkedNodeIds(treeView.dataSource.view(), checkedNodes);
+
+        $("#selectedUserSiteLocations").val(checkedNodes);
+        $("#PermissionId").val($("#permissions").data("kendoComboBox").value());
+    }
+
+    function checkedNodeIds(nodes, checkedNodes) {
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            if (node.checked && node.id !== '0') {
+                checkedNodes.push(node.id);
+            }
+
+            if (node.hasChildren) {
+                checkedNodeIds(node.children.view(), checkedNodes);
+            }
+        }
+    }
+
+</script>
+
+@{
+    var isResult = ViewData["IsResult"] ?? false;
+
+    if ((bool)isResult)
+    {
+        <script>
+            closePopup(true);
+        </script>
+    }
+}
